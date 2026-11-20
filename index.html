@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Indicator Review (read-only)</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1b1f24;--mut:#6a737d;--line:#e1e4e8;--ok:#1a7f37;--warn:#9a6700;--bad:#cf222e;--pend:#8c959f;--acc:#0969da}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1318;--card:#171c23;--ink:#e6e9ed;--mut:#8b949e;--line:#2a313a;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--pend:#6e7681;--acc:#58a6ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,Segoe UI,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+header h1{font-size:16px;margin:0}header .m{color:var(--mut)}
+main{display:grid;grid-template-columns:260px 1fr;gap:16px;padding:16px;max-width:1700px;margin:auto}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+nav{background:var(--card);border:1px solid var(--line);border-radius:8px;max-height:calc(100vh - 90px);overflow:auto;position:sticky;top:60px}
+nav a{display:flex;gap:8px;align-items:center;padding:7px 12px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);cursor:pointer}
+nav a.sel{background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--pend);flex:none}
+.match{background:var(--ok)}.minor{background:var(--warn)}.mismatch{background:var(--bad)}.unclear{background:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 4px;font-size:18px}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;color:#fff}
+.shots{display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:12px;margin:12px 0}
+.shotbar{display:flex;gap:6px;align-items:center;margin-top:12px;color:var(--mut);font-size:12px}
+@media(max-width:900px){.shots{grid-template-columns:1fr}}
+main{max-width:none!important;grid-template-columns:220px minmax(0,1fr)!important}
+#zoom{flex-direction:column;gap:8px}#zoom .cap{color:#fff;font-size:14px}#zoom .hint{color:#aaa;font-size:12px}#zoom img{max-width:98vw;max-height:88vh}
+figure{margin:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg)}
+figure img{width:100%;display:block;cursor:zoom-in}figcaption{padding:6px 10px;font-size:12px;color:var(--mut)}figcaption b{color:var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:5px 12px;cursor:pointer;font:inherit}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+textarea{width:100%;min-height:52px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);padding:8px;font:inherit}
+.log{font-size:12px;color:var(--mut)}.log div{padding:2px 0;border-bottom:1px dotted var(--line)}
+table.st{border-collapse:collapse;width:100%;font-size:12.5px}table.st th,table.st td{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+table.st th{background:var(--bg);color:var(--mut);font-weight:600}td.none{color:var(--mut)}
+tr.missing td:first-child,tr.missing td:nth-child(2){box-shadow:inset 3px 0 var(--bad)}tr.diff td:first-child{box-shadow:inset 3px 0 var(--warn)}tr.extra td:first-child{box-shadow:inset 3px 0 var(--acc)}
+.viz{margin:14px 0;padding:16px;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--acc) 4%,var(--card))}
+.viz-h{font-weight:700;font-size:15px;margin-bottom:10px}.viz-h span{font-weight:400;color:var(--mut);font-size:12px;margin-left:8px}
+.viz-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:900px){.viz-grid{grid-template-columns:1fr}}
+.vcard{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--card)}
+.vcard.ref{border-top:4px solid var(--ok)}.vcard.nub{border-top:4px solid var(--bad)}
+.vbadge{display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:12px;color:#fff;margin-bottom:8px}.vbadge.ok{background:var(--ok)}.vbadge.bad{background:var(--bad)}
+.vform{font-size:18px;margin:4px 0 6px}.vform b{font-size:22px}.vform i{color:var(--mut);font-size:13px}
+.wsvg{width:100%;height:auto;display:block}.wsvg .bar{fill:var(--mut);opacity:.55}.wsvg .bar.peak{fill:var(--acc);opacity:1}.wsvg .bar.newest{stroke:var(--ink);stroke-width:2}
+.wsvg .wl{fill:var(--ink);font-size:11px}.wsvg .xl{fill:var(--mut);font-size:11px}
+.vnote{color:var(--mut);margin:4px 0}.vres{font-size:18px;margin-top:6px;padding-top:8px;border-top:1px dashed var(--line)}.vres em{color:var(--bad);font-style:normal;font-size:13px;margin-left:8px}
+.vsum{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}@media(max-width:900px){.vsum{grid-template-columns:1fr 1fr}}
+.vsum div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.vsum b{display:block;font-size:20px}.vsum span{color:var(--mut);font-size:12px}
+.vfix{border:1px solid var(--ok);border-radius:10px;padding:14px;background:var(--card)}.vfix-h{font-weight:700;margin-bottom:8px}.vfix-h span{font-weight:400;color:var(--ok);font-size:12px;margin-left:8px}
+pre.code{margin:0;background:#0d1117;color:#e6edf3;padding:12px;border-radius:8px;overflow:auto;font:12.5px/1.5 Consolas,monospace}
+.vsrc{color:var(--mut);font-size:12px;margin-top:8px}.vsrc a{color:var(--acc)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{padding:3px 10px;border-radius:12px;font-size:12.5px;border:1px solid var(--line)}.chip.yes{color:var(--ok);border-color:var(--ok)}.chip.no{color:var(--bad);border-color:var(--bad)}
+details.how{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:16px}details.how summary{cursor:pointer;font-weight:700}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:10px}.step{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg)}.step b{display:block;margin-bottom:2px}.step .n{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background:var(--acc);color:#fff;margin-right:6px;font-size:12px}.step span{color:var(--mut);font-size:12.5px}
+.cause{margin:10px 0;padding:10px 14px;border-left:4px solid var(--bad);background:color-mix(in srgb,var(--bad) 7%,var(--card));border-radius:6px}
+.empty{color:var(--mut);padding:24px;text-align:center}
+#zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:9;cursor:zoom-out}#zoom img{max-width:96vw;max-height:96vh}
+.yourcall{display:none!important}.ro{background:color-mix(in srgb,var(--acc) 10%,var(--card));border-bottom:1px solid var(--line);padding:8px 16px;font-size:13px;color:var(--mut)}
+</style></head><body>
+<div class="ro">Read-only copy of the local review page (screenshots and results as of 19-20 Nov 2026). Agree/Disagree is disabled here. Reference = TradingView-library chart; test instrument MRF (NSE) daily.</div><header><h1 id="t">Indicator Review</h1><span class="m" id="m"></span><span class="m" id="cnt"></span></header>
+<main><nav id="nav"></nav><section id="main"></section></main>
+<div id="zoom" onclick="this.style.display='none'"><div class="cap" id="zcap"></div><img id="zimg"><div class="hint">← → switch screenshot · Esc or click to close</div></div>
+<script>
+let F={indicators:[],log:[],meta:{}},R={},D={},sel=null,editing=false;
+const V={match:'Match',minor:'Minor difference',mismatch:'Mismatch',unclear:'Cannot tell'};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function load(){
+  try{F=await (await fetch('findings.json?'+Date.now())).json();R=await (await fetch('reviews.json?'+Date.now())).json();}catch(e){}
+  try{D=await (await fetch('diagnoses.json?'+Date.now())).json();}catch(e){D={}}
+  for(const i of F.indicators){const d=D[i.id];if(d){if(d.verdict)i.verdict=d.verdict;if(d.summary)i.summary=d.summary;if(d.status)i.status=d.status;}}
+  if(!editing)render();
+}
+function render(){
+  document.getElementById('t').textContent=F.meta.title||'Indicator Review';
+  document.getElementById('m').textContent=[F.meta.symbol,F.meta.timeframe,F.meta.updated&&('updated '+F.meta.updated)].filter(Boolean).join(' · ');
+  const I=F.indicators,done=I.filter(i=>i.verdict).length;
+  document.getElementById('cnt').textContent=done+' of '+I.length+' judged';
+  if(sel===null&&I.length){const w=I.find(i=>i.status==='in-progress')||I.find(i=>!i.verdict)||I[0];sel=w.id}
+  document.getElementById('nav').innerHTML=I.map(i=>`<a class="${i.id===sel?'sel':''}" onclick="sel='${i.id}';render()"><span class="dot ${i.verdict||''}"></span><span style="flex:1">${esc(i.name)}</span>${R[i.id]?'<span title="reviewed">✓</span>':''}</a>`).join('')||'<div class="empty">No indicators yet</div>';
+  const i=I.find(x=>x.id===sel),m=document.getElementById('main');
+  if(!i){m.innerHTML='<div class="card empty">Waiting for the first indicator…</div>'+logHtml();return}
+  const r=R[i.id]||{};
+  m.innerHTML=HOW+`<div class="card"><h2>${esc(i.name)} ${i.verdict?`<span class="tag ${i.verdict}" style="background:var(--${{match:'ok',minor:'warn',mismatch:'bad',unclear:'acc'}[i.verdict]})">${V[i.verdict]}</span>`:`<span class="tag" style="background:var(--pend)">${esc(i.status||'pending')}</span>`}</h2>
+  <div class="m" style="color:var(--mut)">${i.reference?`Compared against: <b>${esc(i.reference)}</b>${i.referenceNote?' ('+esc(i.referenceNote)+')':''} · Also on: `:'Brokers: '}${esc((i.brokers||[]).filter(b=>b!==i.reference).join(', ')||'—')}${i.settingsUsed?' · Settings used: '+esc(i.settingsUsed):''}</div>
+  ${i.summary?`<p><b>${esc(i.summary)}</b></p>`:''}${diagHtml(i)}${seriesHtml(i)}${i.visualHtml||''}${i.reasoning?(i.visualHtml?`<details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600">Full working (numbers and method)</summary><p style="white-space:pre-wrap">${esc(i.reasoning)}</p></details>`:`<p style="white-space:pre-wrap">${esc(i.reasoning)}</p>`):''}
+  <div class="shotbar">Screenshots per row: ${[1,2,3].map(n=>`<button class="${COLS===n?'on':''}" onclick="setCols(${n})">${n}</button>`).join('')} <span>· click a screenshot for full screen, then use ← → to flip between them</span></div>
+  <div class="shots" style="--cols:${COLS}">${(i.shots||[]).map((s,k)=>`<figure><img src="${esc(s.file)}" onclick="zoom('${i.id}','shots',${k})"><figcaption><b>${esc(s.platform)}</b> ${esc(s.note||'')}</figcaption></figure>`).join('')}</div>
+  ${settingsHtml(i)}
+  <div class="row yourcall"><b>Your call:</b>${['agree','disagree','unsure'].map(d=>`<button class="${r.decision===d?'on':''}" onclick="decide('${i.id}','${d}')">${d[0].toUpperCase()+d.slice(1)}</button>`).join('')}${r.at?`<span class="m" style="color:var(--mut)">saved ${esc(r.at)}</span>`:''}</div>
+  <div class="row yourcall" style="display:block"><textarea id="note" placeholder="Your note for this indicator" onfocus="editing=true" onblur="editing=false;decide('${i.id}',null)">${esc(r.note||'')}</textarea></div></div>`+logHtml();
+}
+const HOW=`<details class="how"><summary>How each indicator is tested (click to open)</summary><div class="steps">
+<div class="step"><b><span class="n">1</span>One reference</b><span>Nubra staging vs one broker only. Default: Fyers (TradingView library). Its defaults are treated as correct.</span></div>
+<div class="step"><b><span class="n">2</span>Same data</b><span>MRF daily candles: identical on both charts (243 of 244 days), so data can't explain a difference. 22 Sep and 19 Nov are left out.</span></div>
+<div class="step"><b><span class="n">3</span>Read settings</b><span>Open both settings dialogs. A different default (e.g. length 20 vs 9) is a finding. Then Nubra is set to the reference's values for the value test.</span></div>
+<div class="step"><b><span class="n">4</span>Read values</b><span>Hover every daily bar and read the legend numbers on both charts. Only days whose last N candles are identical are compared.</span></div>
+<div class="step"><b><span class="n">5</span>Compare</b><span>Equal to the cent on every day = Match. Otherwise Mismatch (days, average and max gap), then I recompute the formula from the closes to find the cause.</span></div>
+<div class="step"><b><span class="n">6</span>Settings &amp; style</b><span>Inputs, Style, Visibility and legend buttons side by side with screenshots; every missing option is flagged.</span></div>
+<div class="step"><b><span class="n">7</span>Your call</b><span>Verdict and evidence are on this page. You press Agree / Disagree and add a note.</span></div>
+</div></details>`;
+function diagHtml(i){const d=D[i.id];if(!d)return'';return `<div class="cause"><b>Cause found:</b> ${esc(d.cause||'')}</div>${d.visualHtml||''}`}
+function seriesHtml(i){const s=i.series;if(!s||!s.nubra||s.nubra.length<2)return'';
+ const a=s.nubra,b=s.fyers,W=900,H=210,P=34;const all=[...a,...b].filter(v=>v!=null);const mn=Math.min(...all),mx=Math.max(...all);
+ const X=k=>P+k*(W-2*P)/(a.length-1),Y=v=>H-P-(v-mn)/((mx-mn)||1)*(H-2*P);
+ const path=arr=>arr.map((v,k)=>v==null?'':((k&&arr[k-1]!=null)?'L':'M')+X(k).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
+ const maxd=Math.max(...a.map((v,k)=>v!=null&&b[k]!=null?Math.abs(v-b[k]):0));
+ return `<div class="viz"><div class="viz-h">Nubra vs Fyers, same candles <span>last ${a.length} compared days · largest gap ${maxd.toFixed(4)}</span></div><svg viewBox="0 0 ${W} ${H}" class="wsvg"><line x1="${P}" x2="${W-P}" y1="${H-P}" y2="${H-P}" stroke="var(--line)"/><path d="${path(b)}" fill="none" stroke="var(--ok)" stroke-width="3"/><path d="${path(a)}" fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="6 4"/><text x="${P}" y="14" class="xl">${mx.toFixed(2)}</text><text x="${P}" y="${H-8}" class="xl">${mn.toFixed(2)}</text></svg><div class="vnote"><b style="color:var(--ok)">━ Fyers (reference)</b> &nbsp; <b style="color:var(--bad)">┅ Nubra</b> &nbsp; (if the dashes sit on the line, they match)</div></div>`}
+function settingsHtml(i){
+  const S=i.settingsRows||[];
+  if(!S.length&&!i.settingsSummary)return '<h3 style="margin:16px 0 4px;font-size:15px">Settings &amp; style <span class="tag" style="background:var(--pend)">not read yet</span></h3>';
+  const cols=['Nubra',...(i.brokers||[]).filter(b=>S.some(r=>r[b]!==undefined))];
+  const sv=i.settingsVerdict?`<span class="tag" style="background:var(--${{match:'ok',minor:'warn',mismatch:'bad',unclear:'acc'}[i.settingsVerdict]})">${V[i.settingsVerdict]}</span>`:'';
+  let h=`<h3 style="margin:16px 0 4px;font-size:15px">Settings &amp; style ${sv}</h3>`;
+  if(i.settingsSummary)h+=`<p><b>${esc(i.settingsSummary)}</b></p>`;
+  if(S.length){
+    h+=`<div style="overflow:auto"><table class="st"><thead><tr><th>Group</th><th>Setting</th>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}<th>Gap vs brokers</th></tr></thead><tbody>`+
+    S.map(r=>`<tr class="${esc(r.gap||'')}"><td>${esc(r.group)}</td><td>${esc(r.setting)}</td>${cols.map(c=>{const v=r[c];return `<td class="${v==null||v===''||v==='—'?'none':''}">${v==null||v===''?'—':esc(v)}</td>`}).join('')}<td>${esc(r.note||r.gap||'')}</td></tr>`).join('')+`</tbody></table></div>`;
+  }
+  if((i.settingsShots||[]).length)h+=`<div class="shots" style="--cols:${COLS}">${i.settingsShots.map((s,k)=>`<figure><img src="${esc(s.file)}" onclick="zoom('${i.id}','settingsShots',${k})"><figcaption><b>${esc(s.platform)}</b> ${esc(s.note||'')}</figcaption></figure>`).join('')}</div>`;
+  return h;
+}
+function logHtml(){return `<div class="card log"><b>Decision log</b>${[...(F.log||[])].reverse().map(l=>`<div>${esc(l.t)} — ${esc(l.text)}</div>`).join('')||'<div>—</div>'}</div>`}
+let COLS=2;try{COLS=+localStorage.getItem('cols')||2}catch(e){}
+function setCols(n){COLS=n;try{localStorage.setItem('cols',n)}catch(e){}render()}
+let ZL=[],ZK=0;
+function zoom(id,list,k){const i=F.indicators.find(x=>x.id===id);ZL=i[list]||[];ZK=k;showZ()}
+function showZ(){const s=ZL[ZK];document.getElementById('zimg').src=s.file;document.getElementById('zcap').textContent=s.platform+' — '+(s.note||'')+'  ('+(ZK+1)+' of '+ZL.length+')';document.getElementById('zoom').style.display='flex'}
+document.addEventListener('keydown',e=>{const z=document.getElementById('zoom');if(z.style.display!=='flex')return;
+ if(e.key==='Escape')z.style.display='none';
+ if(e.key==='ArrowRight'){ZK=(ZK+1)%ZL.length;showZ()}
+ if(e.key==='ArrowLeft'){ZK=(ZK-1+ZL.length)%ZL.length;showZ()}});
+async function decide(id,d){
+  const n=document.getElementById('note');const cur=R[id]||{};
+  const body={id,decision:d??cur.decision??'',note:n?n.value:(cur.note||'')};
+  await fetch('/api/review',{method:'POST',body:JSON.stringify(body)});
+  R[id]={...cur,...body,at:new Date().toLocaleTimeString()};editing=false;load();
+}
+load();
+</script></body></html>

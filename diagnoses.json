@@ -1,0 +1,101 @@
+{
+ "011": {
+  "cause": "Nubra uses floor(length/2) for the first moving average, TradingView uses round(length/2). They differ only for odd lengths (length 9: 4 vs 5). Nubra's default length 20 is even, so the two agree at the default but not at 9.",
+  "visualHtml": "<div class=\"viz\"><div class=\"viz-h\">Same candles, two different half-lengths <span>MRF daily · length 9 · 144 days with identical candles</span></div><div class=\"viz-grid\"><div class=\"vcard ref\"><div class=\"vbadge ok\">TradingView · Fyers</div><div class=\"vform\">half-length = <b>round</b>(9 / 2) = <b>5</b></div><div class=\"vnote\">WMA(2 × WMA(close, 5) − WMA(close, 9), 3). Reproduces Fyers on 144 of 144 days.</div><div class=\"vres\">HMA on 18 Nov = <b>128,982.33</b></div></div><div class=\"vcard nub\"><div class=\"vbadge bad\">Nubra staging</div><div class=\"vform\">half-length = <b>floor</b>(9 / 2) = <b>4</b></div><div class=\"vnote\">WMA(2 × WMA(close, 4) − WMA(close, 9), 3). Reproduces Nubra on 144 of 144 days.</div><div class=\"vres\">HMA on 18 Nov = <b>129,168.39</b> <em>+186.06</em></div></div></div><div class=\"vsum\"><div><b>144 / 144</b><span>days Fyers = round(n/2) version</span></div><div><b>144 / 144</b><span>days Nubra = floor(n/2) version</span></div><div><b>0 / 144</b><span>days Nubra = Fyers</span></div><div><b>odd lengths only</b><span>at an even length (Nubra default 20) both give 10 and agree</span></div></div><div class=\"vfix\"><div class=\"vfix-h\">Formula to use to match TradingView   (one change: round the half-length, do not floor it)</div><pre class=\"code\">function hma(closes, n = 9) {              // closes: full history, oldest → newest; returns the latest value\n  const half = Math.round(n / 2);          // ← TradingView/Fyers: round(9/2) = 5   (Nubra today: floor → 4)\n  const root = Math.round(Math.sqrt(n));   // 3 for n = 9 (floor/round/ceil all give 3 here)\n  const wma = (a, len) =&gt; a.map((_, i) =&gt; i &lt; len - 1 ? null :\n      a.slice(i - len + 1, i + 1).reduce((s, v, k) =&gt; s + (k + 1) * v, 0) / (len * (len + 1) / 2));\n  const diff = wma(closes, half).map((v, i) =&gt; { const w = wma(closes, n)[i]; return v == null || w == null ? null : 2 * v - w; });\n  const out = wma(diff.map(v =&gt; v ?? NaN), root);\n  return out[out.length - 1];\n}</pre><div class=\"vsrc\">Verified by recomputing from the identical candles; the round-half-up choice is what Fyers (TradingView library) shows. TradingView&#x27;s reference page was not readable here.</div></div></div>"
+ },
+ "066": {
+  "cause": "Same formula, different scale: Nubra shows TSI multiplied by 100 (-28.77) where TradingView shows the raw ratio (-0.288). Nubra divided by 100 equals Fyers on 118 of 118 readings (both lines).",
+  "visualHtml": "<div class=\"viz\"><div class=\"viz-h\">Same TSI, two scales <span>MRF daily · 25 / 13 / 13 · 59 days with identical candles</span></div><div class=\"viz-grid\"><div class=\"vcard ref\"><div class=\"vbadge ok\">TradingView · Fyers</div><div class=\"vform\">TSI = EMA(EMA(Δclose)) / EMA(EMA(|Δclose|))</div><div class=\"vnote\">A ratio between -1 and +1. Signal line likewise.</div><div class=\"vres\">latest values: <b>-0.288</b> and <b>-0.164</b></div></div><div class=\"vcard nub\"><div class=\"vbadge bad\">Nubra staging</div><div class=\"vform\">same, multiplied by <b>100</b></div><div class=\"vnote\">Axis runs about -100 to +100.</div><div class=\"vres\">latest values: <b>-28.77</b> and <b>-16.40</b></div></div></div><div class=\"vsum\"><div><b>118 / 118</b><span>readings: Nubra ÷ 100 = Fyers</span></div><div><b>× 100</b><span>the only difference</span></div><div><b>2 lines</b><span>TSI and signal, both scaled</span></div><div><b>scale only</b><span>shape is identical</span></div></div><div class=\"vfix\"><div class=\"vfix-h\">To match TradingView   (drop the ×100)</div><pre class=\"code\">tsi    = ema(ema(close - close[1], long), short) / ema(ema(abs(close - close[1]), long), short)   // no * 100\nsignal = ema(tsi, siglen)\n// If a percentage scale is intended, keep it but say so in the label: users comparing with TradingView will see 100x larger numbers.</pre><div class=\"vsrc\">Verified by dividing every Nubra reading by 100 and comparing with Fyers, within Fyers display rounding.</div></div></div>"
+ },
+ "093": {
+  "cause": "Not a real mismatch: Fyers only has the two-line Aroon (Up and Down). Nubra's single-line Aroon Oscillator equals Aroon Up minus Aroon Down on 91 of 91 days.",
+  "visualHtml": "<div class=\"viz\"><div class=\"viz-h\">Aroon Oscillator vs Aroon <span>MRF daily · length 14 · 91 days with identical candles</span></div><div class=\"viz-grid\"><div class=\"vcard ref\"><div class=\"vbadge ok\">Fyers (TradingView library)</div><div class=\"vform\">two lines: Aroon <b>Up</b> and Aroon <b>Down</b></div><div class=\"vnote\">There is no separate \"Aroon Oscillator\" in this list.</div><div class=\"vres\">latest: Up <b>0.00</b>, Down <b>92.86</b></div></div><div class=\"vcard nub\"><div class=\"vbadge bad\">Nubra staging</div><div class=\"vform\">one line: <b>Up − Down</b></div><div class=\"vnote\">Plus ±90 reference levels in the legend.</div><div class=\"vres\">latest: <b>−92.86</b> = 0.00 − 92.86</div></div></div><div class=\"vsum\"><div><b>91 / 91</b><span>days: Nubra = Up − Down</span></div><div><b>different indicator</b><span>Fyers lacks the oscillator form</span></div><div><b>same maths</b><span>no formula gap</span></div><div><b>check settings</b><span>Nubra has Length only</span></div></div><div class=\"vfix\"><div class=\"vfix-h\">Nothing to change in the formula</div><pre class=\"code\">// Aroon Oscillator = AroonUp - AroonDown   (Nubra already does exactly this)</pre><div class=\"vsrc\">The reference broker has no matching single-line indicator, so this entry compares Nubra against Fyers&#x27; Up and Down lines.</div></div></div>",
+  "verdict": "match",
+  "summary": "Match (against Up − Down): Fyers has no Aroon Oscillator, only Aroon Up and Down. Nubra's oscillator equals Up − Down on 91 of 91 days."
+ },
+ "109": {
+  "cause": "The five Ichimoku lines are the same on both charts, but the legends read them differently: Nubra lists them in a different order and shows the spans and lagging line un-displaced, while TradingView shows the displaced value at the crosshair. Matching column pairs (conversion, base) are equal on 144 of 144 days at the same bar; the spans and lagging line are equal on 144 of 144 days once shifted by the 26-bar displacement and re-ordered.",
+  "verdict": "minor",
+  "summary": "Same five lines; Nubra's legend shows the displaced cloud lines un-displaced and in a different order (verified numerically with a 26-bar shift, 144 of 144 days). How the cloud is drawn on the chart was not compared visually."
+ },
+ "101": {
+  "cause": "Nubra's first line reproduces the standard Chande-Kroll formula (ATR with RMA smoothing, high/low) on 115 of 144 days (the other days differ slightly, likely ATR warm-up) and its second line equals Fyers on every day. Fyers' first line (stop long) is different from Nubra's by up to about 5,000 points, and no window variant I tried (low window 8 to 12, stop window 7 to 11) reproduces it. Cause not found; needs a closer look, possibly Fyers' own variant."
+ },
+ "087": {
+  "cause": "Nubra and Fyers differ by about 1.5% (Nubra/Fyers ratio 1.02 early, 0.985 late) and the gap does not shrink over time (average 0.10, 0.11, 0.09, 0.09 across the four quarters), so it is not warm-up. TradingView's formula (10000 x change of EMA³ of ln close) reproduces Fyers on only 32 of 91 days and no candidate reproduces Nubra, so the cause is not found; the likely suspects are the EMA seeding and whether the log is applied."
+ },
+ "103": {
+  "cause": "Chop Zone is a coloured histogram with no numeric legend, so nothing can be compared numerically. Needs a visual comparison of the colours against the reference."
+ },
+ "125": {
+  "cause": "Zig Zag draws a polyline without a numeric legend value per bar, so it cannot be compared numerically. Needs a visual comparison of the pivots against the reference (and a check of the deviation setting)."
+ },
+ "073": {
+  "verdict": "minor",
+  "cause": "Accumulative Swing Index is a running total, so its level depends on where each chart starts accumulating. The day-to-day changes are equal on 143 of 143 days (within Fyers display rounding); the two lines differ only by a constant offset of about 191,740. Not a formula difference; the shape and every signal are identical.",
+  "summary": "Same line, shifted: running total with a different starting point (constant offset ≈ 191,740); day-to-day changes equal on 143 of 143 days."
+ },
+ "170": {
+  "verdict": "minor",
+  "cause": "Price Volume Trend is a running total, so its level depends on where each chart starts accumulating. The day-to-day changes are equal on 96 of 96 days (within Fyers display rounding); the two lines differ only by a constant offset of about 8,154. Not a formula difference; the shape and every signal are identical.",
+  "summary": "Same line, shifted: running total with a different starting point (constant offset ≈ 8,154); day-to-day changes equal on 96 of 96 days."
+ },
+ "158": {
+  "verdict": "minor",
+  "cause": "Accumulation/Distribution is a running total, so its level depends on where each chart starts accumulating. The day-to-day changes are equal on 141 of 141 days (within Fyers display rounding); the two lines differ only by a constant offset of about 50,896. Not a formula difference; the shape and every signal are identical.",
+  "summary": "Same line, shifted: running total with a different starting point (constant offset ≈ 50,896); day-to-day changes equal on 141 of 141 days."
+ },
+ "168": {
+  "verdict": "minor",
+  "cause": "On Balance Volume is a running total, so its level depends on where each chart starts accumulating. The day-to-day changes are equal on 98 of 98 days (within Fyers display rounding); the two lines differ only by a constant offset of about 136,458. Not a formula difference; the shape and every signal are identical.",
+  "summary": "Same line, shifted: running total with a different starting point (constant offset ≈ 136,458); day-to-day changes equal on 98 of 98 days."
+ },
+ "166": {
+  "verdict": "minor",
+  "cause": "Negative Volume Index is built by repeated multiplication, so a different starting point scales the whole line. Nubra / Fyers is a constant 0.9865 on all 144 days (spread 0.0019%), i.e. the same line at a different scale, not a different formula. Nubra also shows a start value of 1000 as an input that the reference does not offer.",
+  "summary": "Same line at a constant scale (0.9865 × the reference) because accumulation starts at a different point; not a formula difference."
+ },
+ "169": {
+  "verdict": "minor",
+  "cause": "Positive Volume Index is built by repeated multiplication, so a different starting point scales the whole line. Nubra / Fyers is a constant 1.0747 on all 144 days (spread 0.0014%), i.e. the same line at a different scale, not a different formula. Nubra also shows a start value of 1000 as an input that the reference does not offer.",
+  "summary": "Same line at a constant scale (1.0747 × the reference) because accumulation starts at a different point; not a formula difference."
+ },
+ "128": {
+  "verdict": "mismatch",
+  "cause": "Same formula, different scale: Nubra shows Bollinger Bandwidth as a percentage (9.44) where TradingView shows the ratio (0.094, displayed as 0.09). Nubra divided by 100 equals Fyers on 144 of 144 days (within Fyers' 2-decimal display).",
+  "summary": "Scale difference: Nubra shows the bandwidth ×100 (9.44 vs 0.09 on the reference); Nubra ÷ 100 equals Fyers on 144 of 144 days."
+ },
+ "152": {
+  "verdict": "mismatch",
+  "cause": "Different definitions under the same name. Fyers (TradingView) Median Price is (high + low) / 2, reproduced on 144 of 144 days. Nubra's \"Median\" has a Length input (default 3) and equals the 3-bar average of (high + low) / 2 on 144 of 144 days. At the same candle the two numbers differ by hundreds of points.",
+  "summary": "Different definition: TradingView = (high+low)/2 of the bar; Nubra = 3-bar average of (high+low)/2. Each reproduces its own numbers on 144 of 144 days."
+ },
+ "150": {
+  "verdict": "mismatch",
+  "cause": "The middle line is the same on both charts: Nubra's first line equals Fyers' second line on 108 of 144 days, and on the other 36 it differs by at most 0.40 points (0.0003%, EMA warm-up). The bands differ because the defaults and definition differ: Nubra uses multiplier 2 with a separate ATR length of 10, Fyers uses multiplier 1 with the true range over the same 20 bars (this looks like the older TradingView \"KC\" study). Per the reviewer's rule the reference defaults are the correct ones; to compare the band maths itself Nubra would have to be set to multiplier 1 and the true-range option, which it does not offer.",
+  "summary": "Middle line equal (max gap 0.40 points); bands differ because defaults/definition differ (Nubra: multiplier 2, ATR length 10; reference: multiplier 1, true range over the same length)."
+ },
+ "194": {
+  "verdict": "minor",
+  "cause": "The three central values (pivot, bottom and top of the range) are the same set on both charts on 144 of 144 days; their order differs from day to day. Fyers' CPR indicator also plots 13 more pivot levels (support and resistance); Nubra's legend shows \"—\" for them, so they are either off by default or not drawn. This is a feature difference, not a value difference.",
+  "summary": "Central values equal as a set on 144 of 144 days (order varies); Fyers additionally plots 13 pivot levels that Nubra shows as \"—\"."
+ },
+ "102": {
+  "verdict": "unclear",
+  "cause": "Not comparable line by line: Nubra shows one stop at a time (the other side prints \"—\") and takes two inputs (ATR period 22, multiplier 3), while Fyers shows both stops and has three inputs (length 22, ATR length 22, multiplier 3). Needs a direction-aware comparison."
+ },
+ "059": {
+  "verdict": "unclear",
+  "cause": "Same name, different indicator: Fyers' \"RSI Momentum Divergence\" is a fast RSI minus a slow RSI (inputs 5 and 14), Nubra's has five inputs (RSI length 14, pivot settings, 60) and a divergence-detection design. The numbers (45.7 vs 13.2) are not comparable."
+ },
+ "096": {
+  "verdict": "unclear",
+  "cause": "The parameter sets differ: Nubra has ATR period and multiplier (defaults 20 and 2) while Fyers has three inputs (5, 10, 2.5). Nubra was set to 5 for the length but cannot match Fyers' separate ATR length or its 2.5 default multiplier, so the values (129,037 vs 125,407) are not comparable until both are set equally."
+ },
+ "167": {
+  "verdict": "mismatch",
+  "cause": "Same volume magnitude, different sign rule: Nubra signs each bar by its candle body (close vs open, 99 of 100 days) while TradingView/Fyers signs it by close vs previous close (100 of 100 days). The two disagree on 9 of the 100 days checked, which then show opposite signs.",
+  "summary": "Different sign rule: Nubra uses the candle body (close vs open), TradingView uses close vs previous close; they differ in sign on 9 of 100 days, same size.",
+  "visualHtml": "<div class=\"viz\"><div class=\"viz-h\">Same volume, different sign rule <span>MRF daily · 100 days with identical candles</span></div><div class=\"viz-grid\"><div class=\"vcard ref\"><div class=\"vbadge ok\">TradingView · Fyers</div><div class=\"vform\">sign = sign(<b>close − previous close</b>)</div><div class=\"vnote\">Matches Fyers on <b>100 of 100</b> days.</div><div class=\"vres\">e.g. 10.16 K on a day that gapped down then closed above the previous close</div></div><div class=\"vcard nub\"><div class=\"vbadge bad\">Nubra staging</div><div class=\"vform\">sign = sign(<b>close − open</b>)</div><div class=\"vnote\">Matches Nubra on <b>99 of 100</b> days (the candle body).</div><div class=\"vres\">the same day shows <b>−10,157</b> because the candle body is red</div></div></div><div class=\"vsum\"><div><b>9 / 100</b><span>days the sign differs (same size)</span></div><div><b>100 / 100</b><span>days Fyers = close-change rule</span></div><div><b>99 / 100</b><span>days Nubra = candle-body rule</span></div><div><b>sign only</b><span>volume magnitude is equal</span></div></div><div class=\"vfix\"><div class=\"vfix-h\">Formula to use to match TradingView   (compare the close with the previous close)</div><pre class=\"code\">netVolume[i] = volume[i] * sign(close[i] - close[i-1])   // TradingView / Fyers: up or down versus the PREVIOUS CLOSE\n// Nubra today:  volume[i] * sign(close[i] - open[i])      // candle body (green/red candle)\n// The two disagree whenever a candle closes above its open but below the previous close, or the reverse (9 of 100 days checked).</pre><div class=\"vsrc\">Verified from the identical candles: the sign of each Fyers reading against both rules.</div></div></div>"
+ }
+}
